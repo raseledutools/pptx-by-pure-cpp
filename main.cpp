@@ -266,8 +266,7 @@ static vector<Token> xmlTokenize(const string& xml) {
         }
         if (i+1<n && xml[i+1]=='?') { size_t e=xml.find("?>",i+2); i=(e==string::npos?n:e+2); continue; }
         
-        // FIXED: Corrected the malformed XML comment checking line
-        if (i+3<n && xml.substr(i,4)=="",i+4); i=(e==string::npos?n:e+3); continue; }
+        if (i+3<n && xml.substr(i,4)=="<!--") { size_t e=xml.find("-->",i+4); i=(e==string::npos?n:e+3); continue; }
         
         if (i+8<n && xml.substr(i,9)=="<![CDATA["){ size_t e=xml.find("]]>",i+9);
             if(e!=string::npos){toks.push_back({TOK_TEXT,xml.substr(i+9,e-i-9),{}});i=e+3;}else i=n; continue;}
