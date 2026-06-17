@@ -27,7 +27,9 @@ jobs:
           cl.exe /std:c++17 /O2 /EHsc /W3 /MD /utf-8 ^
             /I packages\Microsoft.Web.WebView2\build\native\include ^
             main.cpp ^
-            gdiplus.lib ole32.lib oleaut32.lib uuid.lib shlwapi.lib comctl32.lib shell32.lib ^
+            user32.lib gdi32.lib comdlg32.lib advapi32.lib ^
+            gdiplus.lib ole32.lib oleaut32.lib uuid.lib ^
+            shlwapi.lib comctl32.lib shell32.lib ^
             WebView2LoaderStatic.lib ^
             /Fe:pptx_editor.exe ^
             /link /LIBPATH:packages\Microsoft.Web.WebView2\build\native\x64 ^
