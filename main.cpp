@@ -2098,7 +2098,7 @@ private:
     }
 
     std::string BuildEditScript() {
-        return R"(
+        return R"SCRIPT(
 <script>
 let selectedShape = null;
 let editHistory   = [];
@@ -2353,7 +2353,7 @@ document.getElementById('mainSlide').addEventListener('click', e => {
   }
 });
 </script>
-)";
+)SCRIPT";
     }
 
     void ApplyEditToSlide(SlideData& slide, const EditCommand& cmd) {
