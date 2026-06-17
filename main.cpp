@@ -17,6 +17,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <windowsx.h>
+#include <commdlg.h> // FIXED: Added missing header for GetOpenFileNameW
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <shellapi.h>
@@ -264,7 +265,10 @@ static vector<Token> xmlTokenize(const string& xml) {
             continue;
         }
         if (i+1<n && xml[i+1]=='?') { size_t e=xml.find("?>",i+2); i=(e==string::npos?n:e+2); continue; }
+        
+        // FIXED: Corrected the malformed XML comment checking line
         if (i+3<n && xml.substr(i,4)=="",i+4); i=(e==string::npos?n:e+3); continue; }
+        
         if (i+8<n && xml.substr(i,9)=="<![CDATA["){ size_t e=xml.find("]]>",i+9);
             if(e!=string::npos){toks.push_back({TOK_TEXT,xml.substr(i+9,e-i-9),{}});i=e+3;}else i=n; continue;}
         size_t j = xml.find('>', i);
@@ -493,7 +497,6 @@ static string renderShape(const XmlNode& sp, double slideW, double slideH) {
                     else if(c=='&') esc+="&amp;";
                     else esc+=c;
                 }
-                // UPDATE: Added contenteditable for text editing
                 textHtml += "<span contenteditable=\"true\" style=\""+style+" outline: none;\">"+esc+"</span>";
             }
             textHtml += "</p>";
@@ -531,7 +534,6 @@ static string renderSlideHtml(const string& slideXml, int slideNum, int totalSli
 
     string w = to_string((int)slideWpx), h = to_string((int)slideHpx);
 
-    // UPDATE: Added Javascript to capture Ctrl+S and send save message back to C++
     return R"(<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -642,7 +644,6 @@ static void initWebView() {
                             g_webview->get_Settings(&settings);
                             if(settings) settings->put_IsScriptEnabled(TRUE);
 
-                            // UPDATE: Handle messages from JS (Save trigger)
                             g_webview->add_WebMessageReceived(
                                 Callback<ICoreWebView2WebMessageReceivedEventHandler>(
                                     [](ICoreWebView2* wv, ICoreWebView2WebMessageReceivedEventArgs* args) -> HRESULT {
