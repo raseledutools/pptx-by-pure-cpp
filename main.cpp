@@ -954,7 +954,7 @@ public:
         
         WCHAR info[64];
         swprintf(info, 64, L"Slide %d / %d", m_currentSlide + 1, 10);
-        m_renderTarget->DrawTextW(info, wcslen(info), textFormat,
+        m_renderTarget->DrawText(info, wcslen(info), textFormat,
             D2D1::RectF(10, 10, 300, 40), textBrush);
         
         textFormat->Release();
