@@ -3501,14 +3501,14 @@ private:
             italic ? DWRITE_FONT_STYLE_ITALIC  : DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL, fontSize, L"en-US", fmt.GetAddressOf());
         if (!fmt) return;
-        m_rt->DrawTextW(text.c_str(), (UINT32)text.size(), fmt.Get(),
+        m_rt->DrawText(text.c_str(), (UINT32)text.size(), fmt.Get(),
                         D2D1::RectF(x, y, x+500, y+fontSize*2), brush);
     }
 
     void DrawSimpleText(const std::wstring& text, const D2D1_RECT_F& rect,
                         ID2D1SolidColorBrush* brush) {
         if (!m_defaultFormat) return;
-        m_rt->DrawTextW(text.c_str(), (UINT32)text.size(), m_defaultFormat.Get(),
+        m_rt->DrawText(text.c_str(), (UINT32)text.size(), m_defaultFormat.Get(),
                         rect, brush);
     }
 
@@ -3774,7 +3774,7 @@ public:
                     swprintf(label, 32, L"Slide %d", i+1);
                 }
                 if (labelBrush) {
-                    m_rt->DrawTextW(label, (UINT32)wcslen(label), fmt.Get(),
+                    m_rt->DrawText(label, (UINT32)wcslen(label), fmt.Get(),
                                     labelRect, labelBrush.Get());
                 }
             }
@@ -3843,7 +3843,7 @@ public:
                                                 textBrush.GetAddressOf());
                     const auto& firstRun = shape.paragraphs[0].runs[0];
                     if (textBrush)
-                        m_rt->DrawTextW(firstRun.text.c_str(),
+                        m_rt->DrawText(firstRun.text.c_str(),
                                         (UINT32)std::min(firstRun.text.size(), (size_t)60),
                                         tinyFmt.Get(), r, textBrush.Get());
                 }
@@ -3864,7 +3864,7 @@ public:
             case SB_PAGEDOWN:  si.nPos += si.nPage; break;
             case SB_THUMBTRACK: si.nPos = si.nTrackPos; break;
         }
-        si.nPos = max(si.nMin, min(si.nPos, (int)(si.nMax - si.nPage + 1)));
+        si.nPos = std::max(si.nMin, std::min(si.nPos, (int)(si.nMax - si.nPage + 1)));
         m_scroll = si.nPos;
         SetScrollInfo(m_hwnd, SB_VERT, &si, TRUE);
         InvalidateRect(m_hwnd, NULL, FALSE);
@@ -3900,7 +3900,7 @@ public:
                 SCROLLINFO si = {}; si.cbSize = sizeof(si); si.fMask = SIF_ALL;
                 GetScrollInfo(hwnd, SB_VERT, &si);
                 si.nPos -= delta / 4;
-                si.nPos = max(si.nMin, min(si.nPos, (int)(si.nMax - si.nPage + 1)));
+                si.nPos = std::max(si.nMin, std::min(si.nPos, (int)(si.nMax - si.nPage + 1)));
                 panel->m_scroll = si.nPos;
                 SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
                 InvalidateRect(hwnd, NULL, FALSE);
@@ -4666,18 +4666,8 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR cmdLine, int) {
             if (!path.empty() && path.back() == L'"') path.pop_back();
         }
         if (!path.empty()) {
-            // Load file directly
-            SetCursor(LoadCursor(nullptr, IDC_WAIT));
-            bool ok = app.m_engine.LoadPptx(path);
-            SetCursor(LoadCursor(nullptr, IDC_ARROW));
-            if (ok) {
-                app.m_currentFile  = path;
-                app.m_currentSlide = 0;
-                app.m_fileLoaded   = true;
-                app.UpdateRendererConfig();
-                app.UpdateStatusBar();
-                app.m_thumbPanel.SetSelected(0);
-            }
+            // Load file directly via the public API (handles all internal state)
+            app.OpenFileFromPath(path);
         }
     }
 
