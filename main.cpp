@@ -954,7 +954,7 @@ public:
         
         WCHAR info[64];
         swprintf(info, 64, L"Slide %d / %d", m_currentSlide + 1, 10);
-        m_renderTarget->DrawText(info, wcslen(info), textFormat,
+        m_renderTarget->DrawText(info, static_cast<UINT32>(wcslen(info)), textFormat,
             D2D1::RectF(10, 10, 300, 40), textBrush);
         
         textFormat->Release();
@@ -1049,7 +1049,7 @@ public:
 // MAIN ENTRY
 // ═══════════════════════════════════════════════════════════════════
 
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) {
+int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int) {
     SetProcessDPIAware();
     
     ViewerApp app;
