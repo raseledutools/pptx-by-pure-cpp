@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,14 +22,21 @@ jobs:
         with:
           arch: x64
 
+      - name: Restore WebView2 SDK via NuGet
+        shell: cmd
+        run: |
+          nuget install Microsoft.Web.WebView2 -Version 1.0.2592.51 -OutputDirectory packages -ExcludeVersion
+
       - name: Build EXE with MSVC (cl.exe)
         shell: cmd
         run: |
-          cl.exe /std:c++17 /O2 /EHsc /W3 /MD ^
+          cl.exe /std:c++17 /O2 /EHsc /W3 /MT /utf-8 /DWEBVIEW2_STATIC_LIB ^
+            /I packages\Microsoft.Web.WebView2\build\native\include ^
             main.cpp ^
-            gdiplus.lib ole32.lib oleaut32.lib uuid.lib shlwapi.lib comctl32.lib ^
+            gdiplus.lib ole32.lib oleaut32.lib uuid.lib shlwapi.lib comctl32.lib shell32.lib advapi32.lib user32.lib ^
+            packages\Microsoft.Web.WebView2\build\native\x64\WebView2LoaderStatic.lib ^
             /Fe:pptx_editor.exe ^
-            /link /SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup
+            /link /SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup
           echo Build successful!
           dir pptx_editor.exe
 
