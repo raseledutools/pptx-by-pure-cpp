@@ -7,6 +7,7 @@
 #include <windowsx.h>
 #include <commdlg.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 #include <d2d1.h>
 #include <dwrite.h>
 #include <wincodec.h>
@@ -43,6 +44,9 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "comdlg32.lib")
 
 // ═══════════════════════════════════════════════════════════════════
 // SECTION 0: UTILITY HELPERS
@@ -1316,48 +1320,34 @@ private:
 
     ShapeType GeomNameToType(const std::string& prst) {
         static const std::map<std::string, ShapeType> m = {
-            {"rect","rect"},{"roundRect","roundRect"},{"ellipse","ellipse"},
-            {"triangle","triangle"},{"rtTriangle","triangle"},
-            {"parallelogram","parallelogram"},{"trapezoid","trapezoid"},
-            {"diamond","diamond"},{"pentagon","pentagon"},{"hexagon","hexagon"},
-            {"heptagon","heptagon"},{"octagon","octagon"},
-            {"star4","star4"},{"star5","star5"},{"star6","star6"},
-            {"star8","star8"},{"star16","star16"},{"star24","star24"},{"star32","star32"},
-            {"leftArrow","arrow"},{"rightArrow","arrow"},{"upArrow","arrow"},{"downArrow","arrow"},
-            {"leftRightArrow","arrow"},{"upDownArrow","arrow"},
-            {"bentArrow","arrow"},{"stripedRightArrow","arrow"},{"notchedRightArrow","arrow"},
-            {"chevron","chevron"},{"homePlate","chevron"},
-            {"ribbon","ribbon"},{"ribbon2","ribbon"},{"wave","wave"},
-            {"doubleWave","wave"},{"cloudCallout","cloud"},{"cloud","cloud"},
-            {"heart","heart"},{"lightningBolt","lightning"},
-            {"gear6","gear"},{"gear9","gear"},
-            {"line","line"},{"straightConnector1","line"},{"bentConnector2","line"},
-            {"curvedConnector2","line"},{"curvedConnector3","line"},
+            {"rect",ShapeType::Rect},{"roundRect",ShapeType::RoundRect},
+            {"ellipse",ShapeType::Ellipse},{"triangle",ShapeType::Triangle},
+            {"rtTriangle",ShapeType::Triangle},
+            {"parallelogram",ShapeType::Parallelogram},{"trapezoid",ShapeType::Trapezoid},
+            {"diamond",ShapeType::Diamond},{"pentagon",ShapeType::Pentagon},
+            {"hexagon",ShapeType::Hexagon},{"heptagon",ShapeType::Heptagon},
+            {"octagon",ShapeType::Octagon},
+            {"star4",ShapeType::Star4},{"star5",ShapeType::Star5},
+            {"star6",ShapeType::Star6},{"star8",ShapeType::Star8},
+            {"star16",ShapeType::Star16},{"star24",ShapeType::Star24},
+            {"star32",ShapeType::Star32},
+            {"leftArrow",ShapeType::ArrowLeft},{"rightArrow",ShapeType::ArrowRight},
+            {"upArrow",ShapeType::ArrowUp},{"downArrow",ShapeType::ArrowDown},
+            {"leftRightArrow",ShapeType::ArrowRight},{"upDownArrow",ShapeType::ArrowUp},
+            {"bentArrow",ShapeType::ArrowRight},{"stripedRightArrow",ShapeType::ArrowRight},
+            {"notchedRightArrow",ShapeType::ArrowRight},
+            {"chevron",ShapeType::Chevron},{"homePlate",ShapeType::Chevron},
+            {"ribbon",ShapeType::Ribbon},{"ribbon2",ShapeType::Ribbon},
+            {"wave",ShapeType::Wave},{"doubleWave",ShapeType::Wave},
+            {"cloudCallout",ShapeType::Cloud},{"cloud",ShapeType::Cloud},
+            {"heart",ShapeType::Heart},{"lightningBolt",ShapeType::Lightning},
+            {"gear6",ShapeType::Gear},{"gear9",ShapeType::Gear},
+            {"line",ShapeType::Line},{"straightConnector1",ShapeType::Line},
+            {"bentConnector2",ShapeType::Line},{"curvedConnector2",ShapeType::Line},
+            {"curvedConnector3",ShapeType::Line},
         };
         auto it = m.find(prst);
-        if (it != m.end()) {
-            // Map string back to enum
-            static const std::map<std::string,ShapeType> smap = {
-                {"rect",ShapeType::Rect},{"roundRect",ShapeType::RoundRect},
-                {"ellipse",ShapeType::Ellipse},{"triangle",ShapeType::Triangle},
-                {"parallelogram",ShapeType::Parallelogram},{"trapezoid",ShapeType::Trapezoid},
-                {"diamond",ShapeType::Diamond},{"pentagon",ShapeType::Pentagon},
-                {"hexagon",ShapeType::Hexagon},{"heptagon",ShapeType::Heptagon},
-                {"octagon",ShapeType::Octagon},
-                {"star4",ShapeType::Star4},{"star5",ShapeType::Star5},
-                {"star6",ShapeType::Star6},{"star8",ShapeType::Star8},
-                {"star16",ShapeType::Star16},{"star24",ShapeType::Star24},
-                {"star32",ShapeType::Star32},
-                {"arrow",ShapeType::ArrowRight},{"chevron",ShapeType::Chevron},
-                {"ribbon",ShapeType::Ribbon},{"wave",ShapeType::Wave},
-                {"cloud",ShapeType::Cloud},{"heart",ShapeType::Heart},
-                {"lightning",ShapeType::Lightning},{"gear",ShapeType::Gear},
-                {"line",ShapeType::Line},
-            };
-            auto it2 = smap.find(it->second);
-            if (it2 != smap.end()) return it2->second;
-        }
-        return ShapeType::Rect;
+        return (it != m.end()) ? it->second : ShapeType::Rect;
     }
 
     // ── Fill parsing ──────────────────────────────────────────────
@@ -3392,7 +3382,7 @@ private:
         return totalH;
     }
 
-    float DrawParagraph(const PptxEngine::ParagraphInfo& para,
+    float DrawParagraph(const PptxEngine::Paragraph& para,
                         const D2D1_RECT_F& textRect, float y) {
         using PP = PptxEngine::ParaProps;
         const auto& props = para.props;
@@ -3420,7 +3410,7 @@ private:
         return lineH;
     }
 
-    float DrawRunsOnLine(const PptxEngine::ParagraphInfo& para,
+    float DrawRunsOnLine(const PptxEngine::Paragraph& para,
                          const D2D1_RECT_F& textRect, float startX, float y) {
         // Build a combined IDWriteTextLayout for the paragraph
         // to handle multi-run paragraphs with different formatting
@@ -3628,8 +3618,7 @@ private:
     }
 };
 
-// Alias for DrawParagraph to handle name collision
-using ParagraphInfo = PptxEngine::Paragraph;
+// PptxEngine::Paragraph is the correct type used throughout D2DRenderer
 
 // ═══════════════════════════════════════════════════════════════════
 // SECTION 4: SLIDE THUMBNAIL PANEL
@@ -4238,6 +4227,28 @@ public:
         CoUninitialize();
     }
 
+    // Load a PPTX from a given path directly (used by command-line arg)
+    bool OpenFileFromPath(const std::wstring& path) {
+        SetCursor(LoadCursor(nullptr, IDC_WAIT));
+        bool ok = m_engine.LoadPptx(path);
+        SetCursor(LoadCursor(nullptr, IDC_ARROW));
+        if (!ok) return false;
+        m_currentFile  = path;
+        m_currentSlide = 0;
+        m_fileLoaded   = true;
+        m_zoom         = 1.0f;
+        m_panX = m_panY = 0.0f;
+        WCHAR title[300];
+        swprintf(title, 300, L"Presentation Studio Pro — %s (%d slides)",
+                 PathFindFileNameW(path.c_str()), m_engine.SlideCount());
+        SetWindowTextW(m_hwnd, title);
+        m_renderer.SetConfig({m_zoom, m_panX, m_panY, true, true, 96.0f, m_showGrid});
+        m_thumbPanel.SetSelected(0);
+        UpdateStatusBar();
+        InvalidateRect(m_hwnd, nullptr, FALSE);
+        return true;
+    }
+
     void OpenFile() {
         OPENFILENAMEW ofn = {};
         WCHAR path[MAX_PATH] = {};
@@ -4646,7 +4657,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR cmdLine, int) {
         return 1;
     }
 
-    // If a file was passed on the command line, open it
+    // If a file was passed on the command line, open it immediately
     if (cmdLine && wcslen(cmdLine) > 0) {
         std::wstring path = cmdLine;
         // Strip quotes if present
@@ -4655,8 +4666,18 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR cmdLine, int) {
             if (!path.empty() && path.back() == L'"') path.pop_back();
         }
         if (!path.empty()) {
-            // Post a delayed open message
-            PostMessage(nullptr, WM_USER + 1, 0, 0);
+            // Load file directly
+            SetCursor(LoadCursor(nullptr, IDC_WAIT));
+            bool ok = app.m_engine.LoadPptx(path);
+            SetCursor(LoadCursor(nullptr, IDC_ARROW));
+            if (ok) {
+                app.m_currentFile  = path;
+                app.m_currentSlide = 0;
+                app.m_fileLoaded   = true;
+                app.UpdateRendererConfig();
+                app.UpdateStatusBar();
+                app.m_thumbPanel.SetSelected(0);
+            }
         }
     }
 
